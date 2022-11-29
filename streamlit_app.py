@@ -47,7 +47,7 @@ streamlit.write('The user entered ', fruit_choice)
 
 import snowflake.connector
 
-
+my_cnx=snowflake.connector.connect(**streamlit.secrets["snowflake"])
 
 
 
