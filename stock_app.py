@@ -1,74 +1,16 @@
-import streamlit
 
-import pandas
+connect = z.getDatasource("Stocks")
 
-import requests
-import snowflake.connector
-from urllib.error import URLError
+import pandas as pd
+res = connect.execute(f"select * from stock_history where symbol='{symbol}' and date > '2020-01-01' order by date")
+data = pd.DataFrame(res)
+data.columns = [f"{symbol}_"+item[0] if item[0]!="DATE" else "DATE" for item in res.description]
 
-streamlit.title('My Parents New Healthy Dinner')
+z.show(data)
 
-streamlit.header('Breakfast Menu')
+symbol1 = "SPY"
+res = connect.execute(f"select * from stock_history where symbol='{symbol1}' and date > '2020-01-01' order by date")
+data1 = pd.DataFrame(res)
+data1.columns = [f"{symbol1}_"+item[0] if item[0]!="DATE" else "DATE" for item in res.description]
 
-streamlit.text('Omega 3 & Blueberry Oatmeal')
-
-streamlit.text('Kale, Spinach & Rocket Smoothie')
-streamlit.text('Hard-Boiled Free-Range Egg')
-
-my_fruit_list=pandas.read_csv("https://uni-lab-files.s3.us-west-2.amazonaws.com/dabw/fruit_macros.txt")
-streamlit.dataframe(my_fruit_list)
-
-
-#let's put a pick list
-streamlit.multiselect("pick some fruits:", list(my_fruit_list.index))
-                      
-streamlit.dataframe(my_fruit_list)
-
-streamlit.multiselect("Pick some fruits:", list(my_fruit_list.index))
-
-my_fruit_list = my_fruit_list.set_index('Fruit')
-
-fruits_selected=streamlit.multiselect("Pick some fruits:", list(my_fruit_list.index),['Avocado','Strawberries'])
-
-
-fruits_to_show=my_fruit_list.loc[fruits_selected]
-
-streamlit.dataframe(fruits_to_show)
-
-fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
-
-
-
-streamlit.header("Fruityvice Fruit Advice!")
-
-# write your own comment -what does the next line do? 
-fruityvice_normalized = pandas.json_normalize(fruityvice_response.json())
-# write your own comment - what does this do?
-streamlit.dataframe(fruityvice_normalized)
-
-fruit_choice = streamlit.text_input('What fruit would you like information about?','Kiwi')
-streamlit.write('The user entered ', fruit_choice)
-
-
-
-
-
-
-
-
-my_cnx=snowflake.connector.connect(**streamlit.secrets["snowflake"])
-
-
-
-my_cur = my_cnx.cursor()
-my_cur.execute("select * from fruit_load_list")
-my_data_rows = my_cur.fetchall()
-streamlit.text("The fruit load list contains:")
-streamlit.text(my_data_rows)
-
-my_cur.execute("INSERT INTO fruit_load_list values('test')")
-
-
-
-
-
+joined_result = pd.merge(data, data1, on='DATE')
